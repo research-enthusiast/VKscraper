@@ -56,3 +56,5 @@ docs/_build/
 
 # PyBuilder
 target/
+
+vk_config\.v2\.json

@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import argparse
+from argparse import ArgumentParser
+from vkapifields import VKFIELDS
+from vk_api.audio import VkAudio
 import vk_api
 import json
 import sqlite3
 import csv
+import os
 
-parser = argparse.ArgumentParser(
+flds = VKFIELDS()
+
+parser = ArgumentParser(
         description="Input app id and client_secret"
         )
 parser.add_argument('-um', '--user_auth', 
@@ -23,11 +28,32 @@ parser.add_argument('-om', '--operation_mode',
 parser.add_argument('-lst', '--users_list', help='VK users csv file')
 args = parser.parse_args()
 
+def create_users_files(base_dir, uid):
+    """
+    Create folder and respective csv file for the new user
+    """
+    create_dir = os.path.join(base_dir, uid)
+    print(create_dir)
+    if not os.path.exists(create_dir):
+        os.mkdir(create_dir)
+
+    profile_file = os.path.join(create_dir, 'profile.csv')
+    if not os.path.exists(profile_file):
+        with open(profile_file, 'w') as f:
+            writer = csv.writer(f, delimiter = '|')
+            writer.writerow(flds.REQ_LIST)
+
 def captcha_handler(cap):
+    """
+    Captch handler. If it is appear then copy the link to it, and input result to a console
+    """
     key = input("Enter captcha {0}: ".format(cap.get_url())).strip()
     return cap.try_again(key)
 
 def auth(args):
+    """
+    Auth on VK server
+    """
     if not args.user_auth:
         vk_sess = vk_api.VkApi(app_id=args.app_id, 
                                client_secret=args.client_secret, 
@@ -39,8 +65,10 @@ def auth(args):
 
     try:
         if not args.user_auth:
+            # Auth by application
             vk_sess.server_auth()
         else:
+            # Auth by VK user login and password
             vk_sess.auth()
     except vk_api.AuthError as err_msg:
         print(err_msg)
@@ -49,7 +77,34 @@ def auth(args):
 
 vk_sess = auth(args)
 
+if args.operation_mode == 'p':
+    """
+    Parse all information from user. 
+    Personal data, wall posts, music list
+    """
+    
+    # Get personal information
+    base_dir = os.path.dirname(args.users_list)
+    create_users_files(base_dir, '1304050')
+    with open(args.users_list) as usrs_file:
+        csv_reader = csv.reader(usrs_file)
+        users = next(csv_reader)
+        
+    vk = vk_sess.get_api()
+    resp = vk.users.get(user_ids = '1304050', fields = ','.join(flds.REQ_LIST))
+    
+    # Get wall posts
+    tools = vk_api.VkTools(vk_sess)
+    wall = tools.get_all('wall.get', 100, {'owner_id': 1304050})
+    
+    # Get music lists
+    vkaudio = VkAudio(vk_sess)
+    audios_list = vkaudio.get(owner_id=1304050)
+
 if args.operation_mode == 'r':
+    """
+    Replace all short names (domains) of user to IDs in csv file
+    """
     raw_resp = []
     n_users = 0
     cs = 999
@@ -62,10 +117,10 @@ if args.operation_mode == 'r':
             users_chnkd = [users[i * cs:(i + 1) * cs] for i in range((len(users) + cs - 1) // cs)]
             for ch in users_chnkd:
                 lst = ','.join(ch)
-                raw_resp.extend(vk.users.get(user_ids=lst))
+                raw_resp.extend(vk.users.get(user_ids = lst))
         else:
             lst = ','.join(users)
-            raw_resp = vk.users.get(user_ids=lst)
+            raw_resp = vk.users.get(user_ids = lst)
 
     # Extract list of ID's from response list
     lst_ids = [x['id'] for x in raw_resp]

@@ -58,3 +58,4 @@ docs/_build/
 target/
 
 vk_config\.v2\.json
+test_data/

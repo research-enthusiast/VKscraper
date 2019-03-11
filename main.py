@@ -17,17 +17,25 @@ parser.add_argument('-cs', '--client_secret', help='VK application client secret
 parser.add_argument('-l', '--login', help='VK user login')
 parser.add_argument('-p', '--password', help='VK user password')
 parser.add_argument('-om', '--operation_mode', 
-                    help='Working mode. g - extract all infomation from users pages specified \
+                    help='Working mode. p - extract all infomation from users pages specified \
                     in csv list of users IDs, r - replace all user domain names to IDs in csv \
                     file, s - search users by specified criteria')
 parser.add_argument('-lst', '--users_list', help='VK users csv file')
 args = parser.parse_args()
 
+def captcha_handler(cap):
+    key = input("Enter captcha {0}: ".format(cap.get_url())).strip()
+    return cap.try_again(key)
+
 def auth(args):
     if not args.user_auth:
-        vk_sess = vk_api.VkApi(app_id=args.app_id, client_secret=args.client_secret)
+        vk_sess = vk_api.VkApi(app_id=args.app_id, 
+                               client_secret=args.client_secret, 
+                               captcha_handler=captcha_handler)
     else:
-        vk_sess = vk_api.VkApi(args.login, args.password)
+        vk_sess = vk_api.VkApi(args.login,
+                               args.password, 
+                               captcha_handler=captcha_handler)
 
     try:
         if not args.user_auth:

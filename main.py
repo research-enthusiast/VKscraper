@@ -82,24 +82,46 @@ if args.operation_mode == 'p':
     Parse all information from user. 
     Personal data, wall posts, music list
     """
-    
+
     # Get personal information
     base_dir = os.path.dirname(args.users_list)
-    create_users_files(base_dir, '1304050')
+    uid = '1304050'
+    create_users_files(base_dir, uid)
     with open(args.users_list) as usrs_file:
         csv_reader = csv.reader(usrs_file)
         users = next(csv_reader)
-        
+
     vk = vk_sess.get_api()
-    resp = vk.users.get(user_ids = '1304050', fields = ','.join(flds.REQ_LIST))
+    resp = vk.users.get(user_ids = uid, fields = ','.join(flds.REQ_LIST))
+    
+    # Write to file
+    users_data_write = ""
+    for i in flds.REQ_LIST:
+        cval = resp[0][i]
+        if type(cval) == int:
+            users_data_write = users_data_write.join(str(cval) + "|")
+        elif type(cval) == list:
+            s = ' ; '.join(' , '.join("{!s}={!r}".format(key,val) for (key,val) in d.items()) for d in cval)
+            users_data_write = users_data_write.join(s + "|")
+        elif type(cval) == dict:
+            s = ' , '.join("{!s}={!r}".format(key,val) for (key,val) in cval.items())
+            users_data_write = users_data_write.join(s + "|")
+        else:
+            users_data_write = users_data_write.join(cval + "|")
+
+    path_to_folder = os.path.join(base_dir, uid, 'profile.csv')
+    with open(path_to_folder, 'a') as f:
+        writer = csv.writer(f, delimiter = '|')
+        writer.writerow(users_data_write)
     
     # Get wall posts
     tools = vk_api.VkTools(vk_sess)
-    wall = tools.get_all('wall.get', 100, {'owner_id': 1304050})
+    wall = tools.get_all('wall.get', 100, {'owner_id': 12720602})
     
     # Get music lists
     vkaudio = VkAudio(vk_sess)
-    audios_list = vkaudio.get(owner_id=1304050)
+    audios_list = vkaudio.get(owner_id = 1304050)
+    
 
 if args.operation_mode == 'r':
     """

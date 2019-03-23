@@ -1,7 +1,7 @@
 # -*- coding :  utf-8 -*-
 
-class VKFIELDS : 
-    def __init__(self) : 
+class VKFIELDS: 
+    def __init__(self): 
         self.REQ_LIST = ['id', 'first_name', 'last_name', 'about', 'activities', 'bdate', 'books', 'career', 'city', 
                          'country', 'education', 'followers_count', 'games', 'home_town', 'interests', 'movies','music',
                          'occupation', 'personal', 'quotes', 'quotes', 'relation', 'schools', 'sex', 'tv', 'universities']

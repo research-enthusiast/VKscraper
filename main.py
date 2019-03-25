@@ -97,17 +97,24 @@ if args.operation_mode == 'p':
     # Write to file
     users_data_write = ""
     for i in flds.REQ_LIST:
+        # process speicial fields which are returned as separate fields for some reason,
+        # probably because of vk_api library implementation
+        if i == "education":
+            resp[0] 
         cval = resp[0][i]
         if type(cval) == int:
-            users_data_write = users_data_write.join(str(cval) + "|")
+            users_data_write.join(str(cval))  + "|"
         elif type(cval) == list:
             s = ' ; '.join(' , '.join("{!s}={!r}".format(key,val) for (key,val) in d.items()) for d in cval)
-            users_data_write = users_data_write.join(s + "|")
+            users_data_write.join(s)
+            users_data_write.join("|")
         elif type(cval) == dict:
             s = ' , '.join("{!s}={!r}".format(key,val) for (key,val) in cval.items())
-            users_data_write = users_data_write.join(s + "|")
+            users_data_write.join(s)
+            users_data_write.join("|")
         else:
-            users_data_write = users_data_write.join(cval + "|")
+            users_data_write.join(cval)
+            users_data_write.join("|")
 
     path_to_folder = os.path.join(base_dir, uid, 'profile.csv')
     with open(path_to_folder, 'a') as f:
@@ -121,7 +128,6 @@ if args.operation_mode == 'p':
     # Get music lists
     vkaudio = VkAudio(vk_sess)
     audios_list = vkaudio.get(owner_id = 1304050)
-    
 
 if args.operation_mode == 'r':
     """

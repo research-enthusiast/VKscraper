@@ -25,12 +25,10 @@ parser.add_argument('-om', '--operation_mode',
                     in csv list of users IDs, r - replace all user domain names to IDs in csv \
                     file, s - search users by specified criteria')
 parser.add_argument('-lst', '--users_list', help='VK users csv file')
-<<<<<<< HEAD
+
 parser.add_argument('-out', '--out_users_data', help='csv file containing all parsed users',
                     default='parsed_users.csv')
-=======
-parser.add_argument('-out', '--out_users_data', help='csv file containing all parsed users', default='parsed_users.csv')
->>>>>>> master
+
 args = parser.parse_args()
 
 def create_file(f, lst):
@@ -48,21 +46,11 @@ def create_users_files(base_dir, uid):
     if not os.path.exists(create_dir):
         os.mkdir(create_dir)
 
-<<<<<<< HEAD
-    # Crete file for user's audio
-    audio_file = os.path.join(create_dir, 'audio.csv')
-    create_file(audio_file, flds.AUDIO_LIST)
-    
-    # Crete main file for all parsed profiles
-    profile_file = args.out_users_data
-    create_file(profile_file, flds.REQ_LIST)
-=======
     profile_file = args.out_users_data
     if not os.path.exists(profile_file):
         with open(profile_file, 'w', encoding='utf-8') as f:
             writer = csv.writer(f, lineterminator='\n', delimiter = '|')
             writer.writerow(flds.REQ_LIST)
->>>>>>> master
 
 def captcha_handler(cap):
     """
@@ -142,19 +130,13 @@ if args.operation_mode == 'p':
         else:
             users_data_write.append(cval)
 
-<<<<<<< HEAD
-    path_to_users = args.out_users_data
-    with open(path_to_users, 'a', encoding='utf-8') as f:
-=======
     path_to_folder = args.out_users_data
     with open(path_to_folder, 'a', encoding='utf-8') as f:
->>>>>>> master
         writer = csv.writer(f, lineterminator='\n', delimiter='|')
         writer.writerow(users_data_write)
     
     # Get wall posts
     #tools = vk_api.VkTools(vk_sess)
-<<<<<<< HEAD
     #wall = tools.get_all('wall.get', 100, {'owner_id': uid})
     
     # Get music lists
@@ -176,13 +158,6 @@ if args.operation_mode == 'p':
                     users_audio_write.append(cval)
     
             writer.writerow(users_audio_write)
-=======
-    #wall = tools.get_all('wall.get', 100, {'owner_id': 12720602})
-    
-    # Get music lists
-    #vkaudio = VkAudio(vk_sess)
-    #audios_list = vkaudio.get(owner_id = 1304050)
->>>>>>> master
 
 if args.operation_mode == 'r':
     """

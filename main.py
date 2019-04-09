@@ -46,11 +46,13 @@ def create_users_files(base_dir, uid):
     if not os.path.exists(create_dir):
         os.mkdir(create_dir)
 
+    # Crete file for user's audio
+    audio_file = os.path.join(create_dir, 'audio.csv')
+    create_file(audio_file, flds.AUDIO_LIST)
+    
+    # Crete main file for all parsed profiles
     profile_file = args.out_users_data
-    if not os.path.exists(profile_file):
-        with open(profile_file, 'w', encoding='utf-8') as f:
-            writer = csv.writer(f, lineterminator='\n', delimiter = '|')
-            writer.writerow(flds.REQ_LIST)
+    create_file(profile_file, flds.REQ_LIST)
 
 def captcha_handler(cap):
     """

@@ -5,14 +5,9 @@ class VKFIELDS:
         self.REQ_LIST = ['id', 'first_name', 'last_name', 'about', 'activities', 'bdate', 'books', 'career', 'city', 
                          'country', 'followers_count', 'games', 'home_town', 'interests', 'movies','music',
                          'occupation', 'personal', 'quotes', 'relation', 'schools', 'sex', 'tv', 'universities']
-
-        self.EDU_LIST = ['education', 'university', 'university_name', 'faculty', 'faculty_name', 'graduation',
-                         'education_form', 'education_status']
-<<<<<<< HEAD
         
         self.AUDIO_LIST = ['id', 'artist', 'title', 'duration']
-=======
->>>>>>> master
+
 
         self.USERS = {'personal' : {'political' : {
                                     1 : 'коммунистические',

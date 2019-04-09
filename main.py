@@ -8,6 +8,7 @@ import json
 import sqlite3
 import csv
 import os
+import sys
 
 flds = VKFIELDS()
 
@@ -26,6 +27,7 @@ parser.add_argument('-om', '--operation_mode',
                     in csv list of users IDs, r - replace all user domain names to IDs in csv \
                     file, s - search users by specified criteria')
 parser.add_argument('-lst', '--users_list', help='VK users csv file')
+parser.add_argument('-out', '--out_users_data', help='csv file containing all parsed users', default='parsed_users.csv')
 args = parser.parse_args()
 
 def create_users_files(base_dir, uid):
@@ -37,10 +39,10 @@ def create_users_files(base_dir, uid):
     if not os.path.exists(create_dir):
         os.mkdir(create_dir)
 
-    profile_file = os.path.join(create_dir, 'profile.csv')
+    profile_file = args.out_users_data
     if not os.path.exists(profile_file):
-        with open(profile_file, 'w') as f:
-            writer = csv.writer(f, delimiter = '|')
+        with open(profile_file, 'w', encoding='utf-8') as f:
+            writer = csv.writer(f, lineterminator='\n', delimiter = '|')
             writer.writerow(flds.REQ_LIST)
 
 def captcha_handler(cap):
@@ -77,6 +79,10 @@ def auth(args):
 
 vk_sess = auth(args)
 
+# Some user inputs checks
+if args.users_list == '' or args.users_list is None:
+    sys.exit("No users list file provided!")
+
 if args.operation_mode == 'p':
     """
     Parse all information from user. 
@@ -84,8 +90,9 @@ if args.operation_mode == 'p':
     """
 
     # Get personal information
+
     base_dir = os.path.dirname(args.users_list)
-    uid = '1304050'
+    uid = '50549738' #'1304050'
     create_users_files(base_dir, uid)
     with open(args.users_list) as usrs_file:
         csv_reader = csv.reader(usrs_file)
@@ -95,39 +102,39 @@ if args.operation_mode == 'p':
     resp = vk.users.get(user_ids = uid, fields = ','.join(flds.REQ_LIST))
     
     # Write to file
-    users_data_write = ""
+    users_data_write = []
     for i in flds.REQ_LIST:
         # process speicial fields which are returned as separate fields for some reason,
         # probably because of vk_api library implementation
-        if i == "education":
-            resp[0] 
-        cval = resp[0][i]
-        if type(cval) == int:
-            users_data_write.join(str(cval))  + "|"
-        elif type(cval) == list:
-            s = ' ; '.join(' , '.join("{!s}={!r}".format(key,val) for (key,val) in d.items()) for d in cval)
-            users_data_write.join(s)
-            users_data_write.join("|")
-        elif type(cval) == dict:
-            s = ' , '.join("{!s}={!r}".format(key,val) for (key,val) in cval.items())
-            users_data_write.join(s)
-            users_data_write.join("|")
-        else:
-            users_data_write.join(cval)
-            users_data_write.join("|")
+        try:
+            cval = resp[0][i]
+        except:
+            users_data_write.append('')
+            continue
 
-    path_to_folder = os.path.join(base_dir, uid, 'profile.csv')
-    with open(path_to_folder, 'a') as f:
-        writer = csv.writer(f, delimiter = '|')
+        if type(cval) == int:
+            users_data_write.append(str(cval))
+        elif type(cval) == list:
+            s = ' ; '.join(' , '.join('{!s}={!r}'.format(key,val) for (key,val) in d.items()) for d in cval)
+            users_data_write.append(s)
+        elif type(cval) == dict:
+            s = ' , '.join('{!s}={!r}'.format(key,val) for (key,val) in cval.items())
+            users_data_write.append(s)
+        else:
+            users_data_write.append(cval)
+
+    path_to_folder = args.out_users_data
+    with open(path_to_folder, 'a', encoding='utf-8') as f:
+        writer = csv.writer(f, lineterminator='\n', delimiter='|')
         writer.writerow(users_data_write)
     
     # Get wall posts
-    tools = vk_api.VkTools(vk_sess)
-    wall = tools.get_all('wall.get', 100, {'owner_id': 12720602})
+    #tools = vk_api.VkTools(vk_sess)
+    #wall = tools.get_all('wall.get', 100, {'owner_id': 12720602})
     
     # Get music lists
-    vkaudio = VkAudio(vk_sess)
-    audios_list = vkaudio.get(owner_id = 1304050)
+    #vkaudio = VkAudio(vk_sess)
+    #audios_list = vkaudio.get(owner_id = 1304050)
 
 if args.operation_mode == 'r':
     """

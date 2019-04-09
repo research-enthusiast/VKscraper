@@ -12,9 +12,7 @@ import sys
 
 flds = VKFIELDS()
 
-parser = ArgumentParser(
-        description="Input app id and client_secret"
-        )
+parser = ArgumentParser(description="Input app id and client_secret")
 parser.add_argument('-um', '--user_auth', 
                     help='Authorize by login and password if 1 or by app id and client secret if 0', 
                     default=1, type=int)
@@ -27,23 +25,32 @@ parser.add_argument('-om', '--operation_mode',
                     in csv list of users IDs, r - replace all user domain names to IDs in csv \
                     file, s - search users by specified criteria')
 parser.add_argument('-lst', '--users_list', help='VK users csv file')
-parser.add_argument('-out', '--out_users_data', help='csv file containing all parsed users', default='parsed_users.csv')
+parser.add_argument('-out', '--out_users_data', help='csv file containing all parsed users',
+                    default='parsed_users.csv')
 args = parser.parse_args()
+
+def create_file(f, lst):
+    if not os.path.exists(f):
+        print(f + " created")
+        with open(f, 'w', encoding='utf-8') as f:
+            writer = csv.writer(f, lineterminator='\n', delimiter = '|')
+            writer.writerow(lst)
 
 def create_users_files(base_dir, uid):
     """
     Create folder and respective csv file for the new user
     """
     create_dir = os.path.join(base_dir, uid)
-    print(create_dir)
     if not os.path.exists(create_dir):
         os.mkdir(create_dir)
 
+    # Crete file for user's audio
+    audio_file = os.path.join(create_dir, 'audio.csv')
+    create_file(audio_file, flds.AUDIO_LIST)
+    
+    # Crete main file for all parsed profiles
     profile_file = args.out_users_data
-    if not os.path.exists(profile_file):
-        with open(profile_file, 'w', encoding='utf-8') as f:
-            writer = csv.writer(f, lineterminator='\n', delimiter = '|')
-            writer.writerow(flds.REQ_LIST)
+    create_file(profile_file, flds.REQ_LIST)
 
 def captcha_handler(cap):
     """
@@ -90,13 +97,12 @@ if args.operation_mode == 'p':
     """
 
     # Get personal information
-
     base_dir = os.path.dirname(args.users_list)
     uid = '50549738' #'1304050'
     create_users_files(base_dir, uid)
     with open(args.users_list) as usrs_file:
         csv_reader = csv.reader(usrs_file)
-        users = next(csv_reader)
+        next(csv_reader)
 
     vk = vk_sess.get_api()
     resp = vk.users.get(user_ids = uid, fields = ','.join(flds.REQ_LIST))
@@ -123,18 +129,34 @@ if args.operation_mode == 'p':
         else:
             users_data_write.append(cval)
 
-    path_to_folder = args.out_users_data
-    with open(path_to_folder, 'a', encoding='utf-8') as f:
+    path_to_users = args.out_users_data
+    with open(path_to_users, 'a', encoding='utf-8') as f:
         writer = csv.writer(f, lineterminator='\n', delimiter='|')
         writer.writerow(users_data_write)
     
     # Get wall posts
     #tools = vk_api.VkTools(vk_sess)
-    #wall = tools.get_all('wall.get', 100, {'owner_id': 12720602})
+    #wall = tools.get_all('wall.get', 100, {'owner_id': uid})
     
     # Get music lists
-    #vkaudio = VkAudio(vk_sess)
-    #audios_list = vkaudio.get(owner_id = 1304050)
+    vkaudio = VkAudio(vk_sess)
+    audios_list = vkaudio.get(owner_id = 1304050)
+    
+    # Write to file
+    path_to_audios = os.path.join(base_dir, uid, 'audio.csv')
+    with open(path_to_audios, 'a', encoding='utf-8') as f:
+        writer = csv.writer(f, lineterminator='\n', delimiter = '|')
+        
+        for a in audios_list:
+            users_audio_write = []
+            for i in flds.AUDIO_LIST:
+                cval = a[i]
+                if type(cval) == int:
+                    users_audio_write.append(str(cval))
+                else:
+                    users_audio_write.append(cval)
+    
+            writer.writerow(users_audio_write)
 
 if args.operation_mode == 'r':
     """

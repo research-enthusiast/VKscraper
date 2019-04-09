@@ -3,9 +3,12 @@
 class VKFIELDS: 
     def __init__(self): 
         self.REQ_LIST = ['id', 'first_name', 'last_name', 'about', 'activities', 'bdate', 'books', 'career', 'city', 
-                         'country', 'education', 'followers_count', 'games', 'home_town', 'interests', 'movies','music',
+                         'country', 'followers_count', 'games', 'home_town', 'interests', 'movies','music',
                          'occupation', 'personal', 'quotes', 'relation', 'schools', 'sex', 'tv', 'universities']
-        
+
+        self.EDU_LIST = ['education', 'university', 'university_name', 'faculty', 'faculty_name', 'graduation',
+                         'education_form', 'education_status']
+
         self.USERS = {'personal' : {'political' : {
                                     1 : 'коммунистические',
                                     2 : 'социалистические',

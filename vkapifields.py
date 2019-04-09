@@ -8,8 +8,11 @@ class VKFIELDS:
 
         self.EDU_LIST = ['education', 'university', 'university_name', 'faculty', 'faculty_name', 'graduation',
                          'education_form', 'education_status']
+<<<<<<< HEAD
         
         self.AUDIO_LIST = ['id', 'artist', 'title', 'duration']
+=======
+>>>>>>> master
 
         self.USERS = {'personal' : {'political' : {
                                     1 : 'коммунистические',
